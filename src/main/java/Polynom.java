@@ -83,11 +83,9 @@ public class Polynom {
     }
 
     public boolean aufGraphen(Koordinate koordinate){
-        if(getY(koordinate.getX()) == koordinate.getY()){
-            return true;
-        }
-        return false;
+        return getY(koordinate.getX()) == koordinate.getY();
     }
+
 
     @Override
     public String toString() {
@@ -103,7 +101,7 @@ public class Polynom {
             double epsilon = 1e-10;
             if (!(abs == 1 && exponent > 0)) { //wenn co nicht 1 und exponent negativ -> nullen weg
                 if (Math.abs(abs - Math.round(abs)) < epsilon) {
-                    st.append((long)Math.round(abs));
+                    st.append(Math.round(abs));
                 } else {
                     st.append(abs);
                 }

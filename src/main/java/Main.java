@@ -1,11 +1,15 @@
-import java.util.Arrays;
+import javax.swing.*;
 
-public class Main {
+void main() {
+    Polynom funktion = new Polynom(0.2, 0, 0);
 
-    void main(){
-        Polynom funktion = new Polynom(3,5,0,0,0);
-        System.out.println(funktion.ableitung(10));
-        System.out.println(funktion.numerischeAbleitung(10));
-    }
+    Koordinatensystem koordinatensystem = new Koordinatensystem(1, 10, 5, 5);
+    koordinatensystem.addPolynom(funktion, true);
+    koordinatensystem.addPolynom(new Polynom(2, 5), true);
 
+    JFrame frame = new JFrame();
+    frame.setSize(1000, 1000);
+    frame.add(koordinatensystem);
+
+    frame.setVisible(true);
 }
