@@ -35,7 +35,7 @@ public class Polynomial {
         return derivative().getY(x);
     }
 
-    public double[] berechneNullstellen() {
+    public double[] calculateRoots() {
         int n = coefficients.length;
 
         if (n == 1) { // konstant
@@ -73,8 +73,8 @@ public class Polynomial {
         }
     }
 
-    public Koordinate[] gibNullpunkte(){
-        double[] xKoordinate = berechneNullstellen();
+    public Koordinate[] getRoots(){
+        double[] xKoordinate = calculateRoots();
         Koordinate[] koordinaten = new Koordinate[2];
         for(int i = 0; i < xKoordinate.length; i++){
             koordinaten[i] = new Koordinate(xKoordinate[i], getY(xKoordinate[i]));

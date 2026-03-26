@@ -72,8 +72,15 @@ public class Koordinatensystem extends JPanel {
         /*LABELING X*/
         //draw left to right
         for(double xCoord = startX; xCoord <= maxX; xCoord += stepX){
-            drawLineX(g2d, xCoord);
+            if(xCoord != 0){
+                g2d.setColor(Color.gray);
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawLine(getWindowX(xCoord), (int) windowHeight, getWindowX(xCoord), 0);
+                g2d.setColor(Color.black);
+                g2d.setStroke(new BasicStroke(3));
+            }
 
+            drawLineX(g2d, xCoord);
             //String
             String label = String.format("%.2f", xCoord);
             int labelW = fm.stringWidth(label);
@@ -86,8 +93,14 @@ public class Koordinatensystem extends JPanel {
 
         /*LABELING Y*/
         for(double yCoord = startY; yCoord <= maxY; yCoord += stepY){
+            if(yCoord != 0){
+                g2d.setColor(Color.gray);
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawLine(0, getWindowY(yCoord), (int) windowWidth, getWindowY(yCoord));
+                g2d.setColor(Color.black);
+                g2d.setStroke(new BasicStroke(3));
+            }
             drawLineY(g2d, yCoord);
-
             //String
             String label = String.format("%.2f", yCoord);
             int labelH = (int) fm.getStringBounds(label, g2d).getHeight();
@@ -106,6 +119,7 @@ public class Koordinatensystem extends JPanel {
                 //drawPoint(g2d, koordinate);
                 vorherigeK = koordinate;
             }
+            System.out.println(polynomial.toString());
         }
 
         /*POINTS*/
@@ -128,7 +142,7 @@ public class Koordinatensystem extends JPanel {
     }
 
     void nullstellenMarkieren(Polynomial polynomial) {
-        for (Koordinate koordinate : polynomial.gibNullpunkte()) {
+        for (Koordinate koordinate : polynomial.getRoots()) {
             if(koordinate != null) punkte.add(koordinate);
         }
     }
@@ -198,7 +212,7 @@ public class Koordinatensystem extends JPanel {
     }
 
     public void setStepX(double stepX) {
-        if (stepX > 0) {
+        if (stepX > 0.01 && stepX < 20) {
             this.stepX = stepX;
         }
     }
@@ -208,7 +222,7 @@ public class Koordinatensystem extends JPanel {
     }
 
     public void setStepY(double stepY) {
-        if (stepY > 0) {
+        if (stepY > 0.01 && stepY < 20) {
             this.stepY = stepY;
         }
     }
