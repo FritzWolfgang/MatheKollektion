@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/src/main/java/Main.java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/src/main/java/Main.java" />
+              <option name="originalContent" value="import javax.swing.*;&#10;&#10;void main() {&#10;    Polynomial funktion = new Polynomial(0.2, 0, 0);&#10;&#10;    Koordinatensystem koordinatensystem = new Koordinatensystem(1, 10, 5, 5);&#10;    koordinatensystem.addPolynom(funktion, true);&#10;    koordinatensystem.addPolynom(new Polynomial(2, 5), true);&#10;&#10;    JFrame frame = new JFrame();&#10;    frame.setSize(1000, 1000);&#10;    frame.add(koordinatensystem);&#10;&#10;    frame.setVisible(true);&#10;}&#10;" />
+              <option name="updatedContent" value="import javax.swing.*;&#10;&#10;void main() {&#10;    Polynomial funktion = new Polynomial(0.2, 0, 0);&#10;&#10;    Koordinatensystem koordinatensystem = new Koordinatensystem(1, 10, 5, 5);&#10;    koordinatensystem.addPolynom(funktion, true);&#10;    koordinatensystem.addPolynom(new Polynomial(2, 5), true);&#10;&#10;    JFrame frame = new JFrame();&#10;    frame.setSize(1000, 1000);&#10;    frame.add(koordinatensystem);&#10;&#10;    frame.setVisible(true);&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

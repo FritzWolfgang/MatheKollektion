@@ -8,15 +8,23 @@ public class Koordinatensystem extends JPanel {
 
     double stepX, stepY;
     int stepsX, stepsY;
+    DragListener dragListener;
 
     public Koordinatensystem(double stepX, int stepsCountX, double stepY, int stepsCountY) {
             this.stepX = stepX;
             this.stepY = stepY;
             this.stepsX = stepsCountX;
             this.stepsY = stepsCountY;
+
+            this.dragListener = new DragListener(this);
+            this.addMouseMotionListener(dragListener);
+            this.addMouseListener(dragListener);
+
+            ScrollListener scrollListener = new ScrollListener(this);
+            this.addMouseWheelListener(scrollListener);
     }
 
-    List<Polynom> graphen = new ArrayList<>();
+    List<Polynomial> graphen = new ArrayList<>();
 
     List<Koordinate> punkte = new ArrayList<>();
 
@@ -34,45 +42,64 @@ public class Koordinatensystem extends JPanel {
 
         //AXES
 
-        //X Axis
+        /*X --- AXIS*/
         g2d.setStroke(new BasicStroke(3));
         g2d.drawLine(0, getWindowY(0), (int) windowWidth, getWindowY(0));
 
-        //add labeling x
+        /*LABELING X*/
         g2d.setFont(g2d.getFont().deriveFont(14f));
         FontMetrics fm = g2d.getFontMetrics();
 
         int centerY = getWindowY(0);
         int centerX = getWindowX(0);
 
-        for(int i = -stepsX; i <= stepsX; i++){
-            double xCoord = i * stepX;
-            drawLine(g2d, xCoord, -0.1, xCoord, +0.1);
-            String label = String.valueOf(xCoord);
+        double offsetPixelsX = dragListener.getOffsetX();
+        double offsetPixelsY = dragListener.getOffsetY();
+
+        // Calculate visible coordinate range based on panning
+        double pixelsPerUnitX = (getWidth() / 2.0) / (stepsX * stepX);
+        double pixelsPerUnitY = (getHeight() / 2.0) / (stepsY * stepY);
+
+        double minX = -stepsX * stepX - offsetPixelsX / pixelsPerUnitX;
+        double maxX = stepsX * stepX - offsetPixelsX / pixelsPerUnitX;
+        double minY = -stepsY * stepY + offsetPixelsY / pixelsPerUnitY;
+        double maxY = stepsY * stepY + offsetPixelsY / pixelsPerUnitY;
+
+        // Find the first valid label position
+        double startX = Math.ceil(minX / stepX) * stepX;
+        double startY = Math.ceil(minY / stepY) * stepY;
+
+        /*LABELING X*/
+        //draw left to right
+        for(double xCoord = startX; xCoord <= maxX; xCoord += stepX){
+            drawLineX(g2d, xCoord);
+
+            //String
+            String label = String.format("%.2f", xCoord);
             int labelW = fm.stringWidth(label);
-            int x = getWindowX(xCoord);
-            g2d.drawString(label, x - labelW / 2, centerY + fm.getAscent() + 8);
+            int windowX = getWindowX(xCoord);
+            g2d.drawString(label, windowX - labelW / 2, centerY + fm.getAscent() + 8);
         }
 
-        //Y Axis
+        /*Y --- AXIS*/
         g2d.drawLine(getWindowX(0), 0, getWindowX(0), (int) windowHeight);
 
-        //add labeling y
-        for(int i = -stepsY; i <= stepsY; i++){
-            double coord = i * stepY;
-            int y = getWindowY(coord);
-            drawLine(g2d, -0.1, coord, 0.1, coord);
-            String label = String.valueOf(coord);
+        /*LABELING Y*/
+        for(double yCoord = startY; yCoord <= maxY; yCoord += stepY){
+            drawLineY(g2d, yCoord);
+
+            //String
+            String label = String.format("%.2f", yCoord);
             int labelH = (int) fm.getStringBounds(label, g2d).getHeight();
-            if(coord != 0) g2d.drawString(label, centerX+3, y - labelH / 2 + fm.getAscent() + 8);
+            int windowY = getWindowY(yCoord);
+            if(Math.abs(yCoord) > 0.001) g2d.drawString(label, centerX+3, windowY - labelH / 2 + fm.getAscent() + 8);
         }
 
-        //draw Polynoms
-        for(Polynom polynom : graphen){
+        /*POLYNOMIALS*/
+        for(Polynomial polynomial : graphen){
             Koordinate vorherigeK = null;
-            for(double i = -stepsX; i <= stepsX; i=i+widthBetweenPoints){
-                double xCoord = i * stepX;
-                Koordinate koordinate = new Koordinate(xCoord, polynom.getY(xCoord));
+            for(double xCoord = startX; xCoord <= maxX; xCoord+=widthBetweenPoints){
+                Koordinate koordinate = new Koordinate(xCoord, polynomial.getY(xCoord));
                 if(vorherigeK != null) {
                     drawLine(g2d, vorherigeK, koordinate);
                 }
@@ -81,7 +108,9 @@ public class Koordinatensystem extends JPanel {
             }
         }
 
+        /*POINTS*/
         for(Koordinate koordinate : punkte){
+            g2d.setColor(Color.RED);
             drawPoint(g2d, koordinate);
         }
 
@@ -91,15 +120,15 @@ public class Koordinatensystem extends JPanel {
 
 
 
-    void addPolynom(Polynom polynom, boolean nullstellenHighlighten){
-        graphen.add(polynom);
-        if(nullstellenHighlighten){
-            nullstellenMarkieren(polynom);
+    void addPolynom(Polynomial polynomial, boolean highlightRoots){
+        graphen.add(polynomial);
+        if(highlightRoots){
+            nullstellenMarkieren(polynomial);
         }
     }
 
-    void nullstellenMarkieren(Polynom polynom) {
-        for (Koordinate koordinate : polynom.gibNullpunkte()) {
+    void nullstellenMarkieren(Polynomial polynomial) {
+        for (Koordinate koordinate : polynomial.gibNullpunkte()) {
             if(koordinate != null) punkte.add(koordinate);
         }
     }
@@ -112,10 +141,17 @@ public class Koordinatensystem extends JPanel {
         g2d.fill(new Ellipse2D.Double(getWindowX(k.getX())-5, getWindowY(k.getY())-5, 10, 10));
     }
 
-    void drawLine(Graphics2D g2d, double x1, double y1, double x2, double y2){
+    void drawLineX(Graphics2D g2d, double x1){
         Stroke stroke = g2d.getStroke();
         g2d.setStroke(new BasicStroke(2));
-        g2d.drawLine(getWindowX(x1), getWindowY(y1), getWindowX(x2), getWindowY(y2));
+        g2d.drawLine(getWindowX(x1), getWindowY(0)-10, getWindowX(x1), getWindowY(0)+10);
+        g2d.setStroke(stroke);
+    }
+
+    void drawLineY(Graphics2D g2d, double y1){
+        Stroke stroke = g2d.getStroke();
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawLine(getWindowX(0)-10, getWindowY(y1), getWindowX(0)+10, getWindowY(y1));
         g2d.setStroke(stroke);
     }
 
@@ -131,34 +167,30 @@ public class Koordinatensystem extends JPanel {
         double centerX = getWidth() / 2.0;
         //ungültig?
         if (stepsX <= 0 || stepX == 0.0) {
-            return (int) Math.round(centerX);
+            return (int) Math.round(centerX + dragListener.getOffsetX());
         }
         // Pixel: Panel-Breite/2 = stepsX * stepX
         double pixelsPerUnitX = (getWidth() / 2.0) / (stepsX * stepX);
-        return (int) Math.round(centerX + xCoord * pixelsPerUnitX);
+        return (int) Math.round(centerX + xCoord * pixelsPerUnitX + dragListener.getOffsetX());
     }
 
     int getWindowY(double yCoord){
         double centerY = getHeight() / 2.0;
         //ungültig?
         if (stepsY <= 0 || stepY == 0.0) {
-            return (int) Math.round(centerY);
+            return (int) Math.round(centerY + dragListener.getOffsetY());
         }
         // Pixel: Panel-Höhe/2 = stepsY * stepY
         double pixelsPerUnitY = (getHeight() / 2.0) / (stepsY * stepY);
-        // Grafische Y-Achse zeigt nach unten, daher invertieren
-        return (int) Math.round(centerY - yCoord * pixelsPerUnitY);
+        // invertieren
+        return (int) Math.round(centerY - yCoord * pixelsPerUnitY + dragListener.getOffsetY());
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-
         update(g2d);
-
-
-
     }
 
     public double getStepX() {
@@ -166,6 +198,50 @@ public class Koordinatensystem extends JPanel {
     }
 
     public void setStepX(double stepX) {
-        this.stepX = stepX;
+        if (stepX > 0) {
+            this.stepX = stepX;
+        }
+    }
+
+    public double getStepY() {
+        return stepY;
+    }
+
+    public void setStepY(double stepY) {
+        if (stepY > 0) {
+            this.stepY = stepY;
+        }
+    }
+
+    public int getStepsX() {
+        return stepsX;
+    }
+
+    public void setStepsX(int stepsX) {
+        this.stepsX = stepsX;
+    }
+
+    public int getStepsY() {
+        return stepsY;
+    }
+
+    public void setStepsY(int stepsY) {
+        this.stepsY = stepsY;
+    }
+
+    public void zoomF(double zoomFactor) {
+        double newStepX = getStepX() * zoomFactor;
+        double newStepY = getStepY() * zoomFactor;
+
+        setStepX(newStepX);
+        setStepY(newStepY);
+    }
+
+    public void zoomAdd(double zoomAddent) {
+        double newStepX = getStepX() + zoomAddent;
+        double newStepY = getStepY() + zoomAddent;
+
+        setStepX(newStepX);
+        setStepY(newStepY);
     }
 }

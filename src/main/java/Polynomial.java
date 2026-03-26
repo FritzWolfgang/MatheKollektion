@@ -1,54 +1,54 @@
-public class Polynom {
+public class Polynomial {
 
-    double[] koeffizienten;
+    double[] coefficients;
 
-    public Polynom(double... koeffizienten) {
-        this.koeffizienten = koeffizienten;
+    public Polynomial(double... coefficients) {
+        this.coefficients = coefficients;
     }
 
     public double getY(double x) {
         double result = 0;
-        int n = koeffizienten.length;
+        int n = coefficients.length;
         for (int i = 0; i < n; i++) {
-            result += koeffizienten[i] * Math.pow(x, n - i - 1);
+            result += coefficients[i] * Math.pow(x, n - i - 1);
         }
         return result;
     }
 
 
-    public double numerischeAbleitung(double x){ //h-methode
+    public double numericDerivative(double x){ //h-methode
         double h = 0.00001; //h->0
         return Util.runde2((getY(x + h) - getY(x)) / h);
     }
 
-    public Polynom ableitung() {
-        int n = koeffizienten.length;
-        if (n == 1) return new Polynom(0); // konstante Funktion
+    public Polynomial derivative() {
+        int n = coefficients.length;
+        if (n == 1) return new Polynomial(0); // konstante Funktion
         double[] abl = new double[n - 1];
         for (int i = 0; i < n - 1; i++) {
-            abl[i] = koeffizienten[i] * (n - i - 1);
+            abl[i] = coefficients[i] * (n - i - 1);
         }
-        return new Polynom(abl);
+        return new Polynomial(abl);
     }
 
-    public double ableitung(double x){
-        return ableitung().getY(x);
+    public double derivative(double x){
+        return derivative().getY(x);
     }
 
     public double[] berechneNullstellen() {
-        int n = koeffizienten.length;
+        int n = coefficients.length;
 
         if (n == 1) { // konstant
             return new double[0];
         } else if (n == 2) { // linear
-            double a = koeffizienten[0];
-            double b = koeffizienten[1];
+            double a = coefficients[0];
+            double b = coefficients[1];
             if (a == 0) return new double[0];
             return new double[]{ Util.runde2(-b / a) };
         } else if (n == 3) { // quadratisch
-            double a = koeffizienten[0];
-            double b = koeffizienten[1];
-            double c = koeffizienten[2];
+            double a = coefficients[0];
+            double b = coefficients[1];
+            double c = coefficients[2];
             double diskriminante = b*b - 4*a*c;
             double nenner = 2*a;
             double[] nullstellen;
@@ -90,9 +90,9 @@ public class Polynom {
     @Override
     public String toString() {
         StringBuilder st = new StringBuilder();
-        int n = koeffizienten.length;
+        int n = coefficients.length;
         for (int i = 0; i < n; i++) {
-            double co = koeffizienten[i];   //koeffizient
+            double co = coefficients[i];   //koeffizient
             if (co == 0) continue;
             int exponent = n - i - 1;       //exponent
             if (!st.isEmpty()) st.append(co > 0 ? " + " : " - ");
