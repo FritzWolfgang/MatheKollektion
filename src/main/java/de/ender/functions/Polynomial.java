@@ -1,4 +1,8 @@
-public class Polynomial {
+package de.ender.functions;
+
+import de.ender.Util;
+
+public class Polynomial extends Function {
 
     double[] coefficients;
 
@@ -16,12 +20,8 @@ public class Polynomial {
     }
 
 
-    public double numericDerivative(double x){ //h-methode
-        double h = 0.00001; //h->0
-        return Util.runde2((getY(x + h) - getY(x)) / h);
-    }
 
-    public Polynomial derivative() {
+    public Polynomial derivative()  {
         int n = coefficients.length;
         if (n == 1) return new Polynomial(0); // konstante Funktion
         double[] abl = new double[n - 1];
@@ -31,9 +31,7 @@ public class Polynomial {
         return new Polynomial(abl);
     }
 
-    public double derivative(double x){
-        return derivative().getY(x);
-    }
+
 
     public double[] calculateRoots() {
         int n = coefficients.length;
@@ -73,18 +71,9 @@ public class Polynomial {
         }
     }
 
-    public Koordinate[] getRoots(){
-        double[] xKoordinate = calculateRoots();
-        Koordinate[] koordinaten = new Koordinate[2];
-        for(int i = 0; i < xKoordinate.length; i++){
-            koordinaten[i] = new Koordinate(xKoordinate[i], getY(xKoordinate[i]));
-        }
-        return koordinaten;
-    }
 
-    public boolean aufGraphen(Koordinate koordinate){
-        return getY(koordinate.getX()) == koordinate.getY();
-    }
+
+
 
 
     @Override
