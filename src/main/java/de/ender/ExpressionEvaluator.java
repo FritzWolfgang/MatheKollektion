@@ -1,18 +1,51 @@
-// src/main/java/de/ender/functions/ExpressionEvaluator.java
+/*
+ ExpressionEvaluator
+ ---------------------------------
+ Purpose:
+  - Parse and evaluate a mathematical expression given as a String.
+  - Supports numeric literals, the variable `x`, the constant `pi`, common math
+    functions (sin, cos, tan, asin, acos, atan, sqrt, abs, ln, log, exp),
+    binary operators (+, -, *, /, ^) and parentheses.
+
+ Features / behavior:
+  - Preprocessing: whitespace removed, `pi` normalized, and implicit multiplication
+    is inserted (e.g. "2x" -> "2*x", "2(x+1)" -> "2*(x+1)").
+  - Parsing: recursive-descent parser with the following precedence (high -> low):
+      primary (numbers, x, pi, function calls, parentheses)
+      unary (+, -)
+      exponentiation (^)
+      multiplication/division (*, /)
+      addition/subtraction (+, -)
+  - Evaluation: call `evaluate(xVal)` to evaluate the expression with `x` substituted
+    by `xVal`.
+
+ Important notes / edge cases:
+  - Exponentiation is implemented as repeated application of `Math.pow` and behaves
+    left-to-right in this implementation (i.e. left-associative); if right-associative
+    behavior (2^(3^2)) is required, the parser needs a small change.
+  - Unknown identifiers (except `x` and `pi`) are treated as function names only
+    when followed by parentheses (e.g. "sin(1)"). Bare unknown names will raise
+    a RuntimeException.
+  - Malformed numbers or syntax errors throw RuntimeException or NumberFormatException.
+
+ Example usages:
+  new ExpressionEvaluator("2x + sin(pi/2)").evaluate(3)  // -> 7.0
+  new ExpressionEvaluator("(pi/2) + 1").evaluate(0)    // -> ~2.5708
+*/
+
 package de.ender;
 
 import java.util.Locale;
 
 public class ExpressionEvaluator {
-    private final String input;
-    private String s;
+    private final String s;
     private int pos = -1;
     private int ch;
 
     public ExpressionEvaluator(String input) {
-        this.input = input;
         this.s = preprocess(input);
     }
+
 
     public double evaluate(double xVal) {
         pos = -1;
@@ -113,20 +146,20 @@ public class ExpressionEvaluator {
     }
 
     private double applyFunction(String name, double arg) {
-        switch (name) {
-            case "sin": return Math.sin(arg);
-            case "cos": return Math.cos(arg);
-            case "tan": return Math.tan(arg);
-            case "asin": return Math.asin(arg);
-            case "acos": return Math.acos(arg);
-            case "atan": return Math.atan(arg);
-            case "sqrt": return Math.sqrt(arg);
-            case "abs": return Math.abs(arg);
-            case "ln": return Math.log(arg);
-            case "log": return Math.log10(arg);
-            case "exp": return Math.exp(arg);
-            default: throw new RuntimeException("Unknown function: " + name);
-        }
+        return switch (name) {
+            case "sin" -> Math.sin(arg);
+            case "cos" -> Math.cos(arg);
+            case "tan" -> Math.tan(arg);
+            case "asin" -> Math.asin(arg);
+            case "acos" -> Math.acos(arg);
+            case "atan" -> Math.atan(arg);
+            case "sqrt" -> Math.sqrt(arg);
+            case "abs" -> Math.abs(arg);
+            case "ln" -> Math.log(arg);
+            case "log" -> Math.log10(arg);
+            case "exp" -> Math.exp(arg);
+            default -> throw new RuntimeException("Unknown function: " + name);
+        };
     }
 
     // --- helpers ---
@@ -138,7 +171,7 @@ public class ExpressionEvaluator {
         return (c >= '0' && c <= '9') || c == '.';
     }
 
-    // preprocess: remove spaces, normalize pi, insert implicit multiplication (e.g. 3x, 3sin(...), )(
+    // preprocess
     private String preprocess(String in) {
         String t = in.replaceAll("\\s+", "");
         StringBuilder out = new StringBuilder();
@@ -155,7 +188,7 @@ public class ExpressionEvaluator {
                 }
             }
         }
-        // normalize variable and pi to lower-case tokens
+        // normalize pi
         return out.toString().replaceAll("PI", "pi").replaceAll("Pi", "pi").replaceAll("pI", "pi");
     }
 }

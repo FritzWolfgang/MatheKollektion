@@ -12,8 +12,14 @@ public class Free extends Function{
 
     @Override
     public double getY(double x) {
-        de.ender.ExpressionEvaluator eval = new de.ender.ExpressionEvaluator(input);
-        return eval.evaluate(x);
+        try {
+            de.ender.ExpressionEvaluator eval = new de.ender.ExpressionEvaluator(input);
+            return eval.evaluate(x);
+        } catch (RuntimeException e) {
+            // Return NaN for invalid expressions so they don't render
+            // and don't crash the UI. The error is already logged elsewhere if needed.
+            return Double.NaN;
+        }
     }
 
     @Override
